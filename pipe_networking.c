@@ -11,11 +11,18 @@
   =========================*/
 int server_setup() {
   int from_client = 0;
+  mkfifo("wkp",0666);
+  int wkp = open("wkp", O_RDWR); //blocks
+  char temp[256];
+  if (read(wkp, temp, sizeof(temp))){
+    close(wkp);
+  }
+  from_client = wkp;
   return from_client;
 }
 
 /*=========================
-  server_handshake 
+  server_handshake
   args: int * to_client
 
   Performs the server side pipe 3 way handshake.
@@ -25,6 +32,18 @@ int server_setup() {
   =========================*/
 int server_handshake(int *to_client) {
   int from_client;
+  from_client = server_setup();
+  char temp[256];
+  read(from_client, temp, sizeof(temp));
+  *to_client = open(temp, O_RDWR); // unblock
+  srand( time(NULL) );
+  int random = rand()%10;
+  write(*to_client, &random, sizeof(random));
+  int *r;
+  read(from_client, &r, sizeof(r));
+  if (r==random+1){
+
+  }
   return from_client;
 }
 
@@ -40,6 +59,18 @@ int server_handshake(int *to_client) {
   =========================*/
 int client_handshake(int *to_server) {
   int from_server;
+  char pp_name[256];
+  snprintf(pp_name, sizeof(pp_name), "%d", getpid());
+  mkfifo(pp_name,0666);
+  int wkp = open("wkp", O_RDWR); //unblocks
+  write(wkp, pp_name, sizeof(pp_name));
+  int pp = open(pp_name, O_RDWR); //blocks
+  *to_server = pp;
+  int* r;
+  if (read(pp, r, sizeof(r))){
+    close(pp);
+  }
+  write(*to_server, &r+1, sizeof(r));
   return from_server;
 }
 
@@ -56,5 +87,3 @@ int server_connect(int from_client) {
   int to_client  = 0;
   return to_client;
 }
-
-
