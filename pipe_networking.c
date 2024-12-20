@@ -47,6 +47,9 @@ int server_handshake(int *to_client) {
   if (r==random+1){
     printf("handshake works\n");
   }
+  else{
+    printf("%d is not %d +1",r,random);
+  }
   return from_client;
 }
 
@@ -73,11 +76,12 @@ int client_handshake(int *to_server) {
     printf("opened pp\n");
   from_server = pp;
   int *r1;
-  if (read(pp, r1, sizeof(r1))){
+  if (read(pp, &r1, sizeof(int))){
     close(pp);
       printf("closed pp\n");
   }
-  write(*to_server, r1+1, sizeof(r1));
+  write(*to_server, r1+1, sizeof(int));
+
   return from_server;
 }
 
