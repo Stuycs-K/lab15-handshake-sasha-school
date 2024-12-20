@@ -12,10 +12,12 @@
 int server_setup() {
   int from_client = 0;
   mkfifo("wkp",0666);
-  int wkp = open("wkp", O_RDWR); //blocks
+    printf("made wkp\n");
+  int wkp = open("wkp", O_RDONLY); //blocks
   char temp[256];
   if (read(wkp, temp, sizeof(temp))){
     close(wkp);
+      printf("closed wkp\n");
   }
   from_client = wkp;
   return from_client;
@@ -36,13 +38,14 @@ int server_handshake(int *to_client) {
   char temp[256];
   read(from_client, temp, sizeof(temp));
   *to_client = open(temp, O_RDWR); // unblock
+    printf("opened pp\n");
   srand( time(NULL) );
   int random = rand()%10;
   write(*to_client, &random, sizeof(random));
-  int *r;
+  int r;
   read(from_client, &r, sizeof(r));
   if (r==random+1){
-
+    printf("handshake works\n");
   }
   return from_client;
 }
@@ -62,15 +65,19 @@ int client_handshake(int *to_server) {
   char pp_name[256];
   snprintf(pp_name, sizeof(pp_name), "%d", getpid());
   mkfifo(pp_name,0666);
+    printf("made pp\n");
   int wkp = open("wkp", O_RDWR); //unblocks
+    printf("opened wkp\n");
   write(wkp, pp_name, sizeof(pp_name));
-  int pp = open(pp_name, O_RDWR); //blocks
-  *to_server = pp;
-  int* r;
-  if (read(pp, r, sizeof(r))){
+  int pp = open(pp_name, O_RDONLY); //blocks
+    printf("opened pp\n");
+  from_server = pp;
+  int *r1;
+  if (read(pp, r1, sizeof(r1))){
     close(pp);
+      printf("closed pp\n");
   }
-  write(*to_server, &r+1, sizeof(r));
+  write(*to_server, r1+1, sizeof(r1));
   return from_server;
 }
 
