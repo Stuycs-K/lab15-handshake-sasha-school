@@ -41,6 +41,7 @@ int server_handshake(int *to_client) {
     printf("opened pp\n");
   srand( time(NULL) );
   int random = rand()%10;
+  printf("sending random %d\n",random);
   write(*to_client, &random, sizeof(random));
   int r;
   read(from_client, &r, sizeof(r));
@@ -75,12 +76,15 @@ int client_handshake(int *to_server) {
   int pp = open(pp_name, O_RDONLY); //blocks
     printf("opened pp\n");
   from_server = pp;
-  int *r1;
+  int r1;
   if (read(pp, &r1, sizeof(int))){
     close(pp);
       printf("closed pp\n");
   }
-  write(*to_server, r1+1, sizeof(int));
+  printf("recieved %d\n",r1);
+  r1+=1;
+  printf("sending rand+1 %d\n",r1);
+  write(*to_server, &r1, sizeof(int));
 
   return from_server;
 }
